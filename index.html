@@ -20,26 +20,35 @@
   </body>
   <script>
     "use strict";
-    let commentsData = [
-    {
-      author: "Глеб Фокин",
-      date: "12.02.22 12:18",
-      text: "Это будет первый комментарий на этой странице",
-      likes: 3,
-      isLiked: false
-    },
-    {
-      author: "Варвара Н.",
-      date: "13.02.22 19:22",
-      text: "Мне нравится как оформлена эта страница! ❤",
-      likes: 75,
-      isLiked: true
-    }
-  ];
+    let commentsData = [];
+
     const listElement = document.getElementById("list");
     const nameInputElement = document.getElementById("name-input");
     const textAreaElement = document.getElementById("text-input");
     const buttonElement = document.getElementById("write-button");
+
+    // GET-запрос
+  const fetchPromise = fetch("https://wedev-api.sky.pro/api/v1/aleksander-gavrikov/comments", {
+    method: "GET"
+  });
+  //выполнение ниже после запроса
+  fetchPromise.then((response) => {
+    // преобразование в json
+    response.json().then((responseData) => {
+      const appComments = responseData.comments.map((comment) => {
+        return {
+          author: comment.author.name,
+          date: new Date(comment.date).toLocaleDateString('default', { day: '2-digit', month: '2-digit', year: '2-digit' }) + " " + new Date(comment.date).toLocaleTimeString().slice(0, -3),
+          text: comment.text,
+          likes: comment.likes,
+          isLiked: false,
+        };
+      });
+
+      commentsData = appComments;
+      renderComments();
+    });
+  });
 
     // Рендеринг списка комментариев
   function renderComments() {
@@ -70,58 +79,70 @@
   }
   renderComments();
 
-  buttonElement.addEventListener('click', () => {
-    let currentDate = new Date();
-    let dayWeek = currentDate.getDate();
-    if (dayWeek < 10) {
-      dayWeek = "0" + dayWeek;
-    }
-    let month = currentDate.getMonth() + 1;
-    if (month < 10) {
-      month = "0" + month;
-    }
-    let years = currentDate.getFullYear();
-    let hours = currentDate.getHours();
-    if (hours < 10) {
-      hours = "0" + hours;
-    }
-    let minutes = currentDate.getMinutes();
-    if (minutes < 10) {
-      minutes = "0" + minutes;
-    }
-    let myDate = dayWeek + "." + month + "." + years + " " + hours + ":" + minutes;
-    nameInputElement.classList.remove("error");
-    textAreaElement.classList.remove("error");
-    if (nameInputElement.value === "" || nameInputElement.value.trim().length === 0) {
+buttonElement.addEventListener('click', () => {
+    
+nameInputElement.classList.remove("error");
+textAreaElement.classList.remove("error");
+ 
+
+if (!nameInputElement.value || nameInputElement.value.trim().length === 0) {
       nameInputElement.classList.add("error");
-      return;
-    }
-    else if (textAreaElement.value === "" || textAreaElement.value.trim().length === 0) {
+    return;
+  }
+else if (!textAreaElement.value || textAreaElement.value.trim().length === 0) {
       textAreaElement.classList.add("error");
-      return;
-    }
+    return;
+  }
       
-      const newComment = {
-      author: nameInputElement.value
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;"),
-      date: myDate,
-      text: textAreaElement.value
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;"),
-      likes: 0,
-      isLiked: false
-    };
-    commentsData.push(newComment);
+ //POST-запрос
+ fetch("https://wedev-api.sky.pro/api/v1/aleksander-gavrikov/comments", {
+      method: "POST",
+      body: JSON.stringify({
+        name: nameInputElement.value
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;"),
+        text: textAreaElement.value
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+      })
+    }).then((response) => {
+      response.json().then((responseData) => {
+        // получили данные и рендерим
+        commentsData = responseData.comments;
+        renderComments();
+      });
+    });
     renderComments();
     nameInputElement.value = "";
     textAreaElement.value = "";
-  });
+  
+    //Запрос на получение комментариев с сервера
+    const fetchPromise = fetch("https://wedev-api.sky.pro/api/v1/aleksander-gavrikov/comments", {
+      method: "GET"
+    });
+    //выполнение ниже после запроса
+    fetchPromise.then((response) => {
+      // преобразование в json
+      response.json().then((responseData) => {
+        const appComments = responseData.comments.map((comment) => {
+          return {
+            author: comment.author.name,
+            date: new Date(comment.date).toLocaleDateString('default', { day: '2-digit', month: '2-digit', year: '2-digit' }) + " " + new Date(comment.date).toLocaleTimeString().slice(0, -3),
+            text: comment.text,
+            likes: comment.likes,
+            isLiked: false,
+          };
+        });
 
+        commentsData = appComments;
+        renderComments();
+      });
+    });
+  });
     function attachLikeButtonHandler() {
     const likeButtons = document.querySelectorAll('.like-button');
     for (const button of likeButtons) {
@@ -146,9 +167,9 @@
     for (const editComment of editComments) {
       editComment.addEventListener('click', () => {
         const index = editComment.dataset.index;
-        const commentAuthor = `QUOTE_BEGIN${commentsData[index].author}:`;
-        const commentText = `${commentsData[index].text}QUOTE_END`;
-        textAreaElement.value = `${commentAuthor}\n${commentText}\n\n`;
+        const commentAuthor = `${commentsData[index].author}:`;
+        const commentText = `${commentsData[index].text}`;
+        textAreaElement.value = `${commentAuthor}\n${commentText}\n\n`.replaceAll("QUOTE_BEGIN", "").replaceAll("QUOTE_END", "");;
         renderComments();
       })
     }
