@@ -36,7 +36,7 @@
     ///Функция GET-запроса (получение с сервера)
   function fetchAndCommentsRender() {
     addCommentElement.style.display = "none";
-    return fetch("https://wedev-api.sky.pro/api/v1/aleksander-gavrikov/comments", {
+    fetch("https://wedev-api.sky.pro/api/v1/aleksander-gavrikov/comments", {
       method: "GET"
     })
       .then((response) => {
@@ -90,28 +90,9 @@
   fetchAndCommentsRender();
   renderComments();
 
-buttonElement.addEventListener('click', () => {
-    
-  nameInputElement.classList.remove("error");
-  textAreaElement.classList.remove("error");
- 
-
-if (!nameInputElement.value || nameInputElement.value.trim().length === 0) {
-      nameInputElement.classList.add("error");
-    return;
-  }
-else if (!textAreaElement.value || textAreaElement.value.trim().length === 0) {
-      textAreaElement.classList.add("error");
-    return;
-  }
-
-    addFormElement.style.display = "none";
-    addCommentElement.textContent = "Комментарий добавляется...";
-    addCommentElement.style.display = "block";
-
-      
- //POST-запрос
-  fetch("https://wedev-api.sky.pro/api/v1/aleksander-gavrikov/comments", {
+  const postComment = (text, name) => {
+    //POST-запрос с цепочкой промисов (отправка на сервер)
+    return fetch("https://wedev-api.sky.pro/api/v1/aleksander-gavrikov/comments", {
       method: "POST",
       body: JSON.stringify({
         name: nameInputElement.value
@@ -123,22 +104,83 @@ else if (!textAreaElement.value || textAreaElement.value.trim().length === 0) {
           .replaceAll("&", "&amp;")
           .replaceAll("<", "&lt;")
           .replaceAll(">", "&gt;")
-          .replaceAll('"', "&quot;")
+          .replaceAll('"', "&quot;"),
+        forceError: true,
       })
     })
       .then((response) => {
-        return response.json()
+        if (response.status === 500) {
+          throw new Error("Сервер упал");
+        }
+
+        if (response.status === 400) {
+          throw new Error("Ошибочный запрос");
+        }
+        else {
+          return response.json()
+        }
       })
       .then(() => {
         fetchAndCommentsRender();
-      });
-  
-  renderComments();
-    
-    nameInputElement.value = "";
-    textAreaElement.value = "";
+      
+        nameInputElement.value = "";
+        textAreaElement.value = "";
+      })
+    };
 
-  });
+// функция проверки полей и обработка кодов API
+const handlePostClick = () => {
+
+  nameInputElement.classList.remove("error");
+  textAreaElement.classList.remove("error");
+
+  if (!nameInputElement.value || nameInputElement.value.trim().length === 0) {
+    nameInputElement.classList.add("error");
+    return;
+  }
+
+  else if (!textAreaElement.value || textAreaElement.value.trim().length === 0) {
+    textAreaElement.classList.add("error");
+    return;
+  }
+
+  // Скрыть форму добавления и показать сообщение о добавлении
+  addFormElement.style.display = "none";
+  addCommentElement.textContent = "Комментарий добавляется...";
+  addCommentElement.style.display = "flex";
+
+  postComment(textAreaElement.value, nameInputElement.value)
+
+      .catch((error) => {
+
+        // Обработка ошибки сервера
+        if (error.message === "Сервер упал") {
+          handlePostClick();
+        }
+
+        // Обработка ошибки пользователя
+        else if (error.message === "Ошибочный запрос") {
+          alert("Имя и комментарий должны быть не короче 3 символов");
+          showAddForm();
+          return;
+        }
+
+        else {
+          alert("Кажется, у вас сломался интернет, попробуйте позже");
+          showAddForm();
+        }
+      });
+
+    renderComments();
+
+  };
+
+  buttonElement.addEventListener('click', handlePostClick);
+
+  function showAddForm() {
+    addFormElement.style.display = "flex";
+    addCommentElement.style.display = "none";
+  }
 
     function attachLikeButtonHandler() {
       const likeButtons = document.querySelectorAll('.like-button');
