@@ -7,7 +7,9 @@
   </head>
   <body>
     <div class="container">
+      <div class="loading">Пожалуйста подождите, загружаю комментарии...</div>
       <ul id="list" class="comments"></ul>
+      <div id="add-comment" class="add-comment-text">Комментарий добавляется...</div>
       <div class="add-form">
         <input id="name-input" type="text" class="add-form-name" placeholder="Введите ваше имя" />
         <textarea id="text-input" type="textarea" class="add-form-text" placeholder="Введите ваш коментарий"
@@ -26,15 +28,20 @@
     const nameInputElement = document.getElementById("name-input");
     const textAreaElement = document.getElementById("text-input");
     const buttonElement = document.getElementById("write-button");
+    const loadingElement = document.querySelector(".loading");
+    const addFormElement = document.querySelector(".add-form");
+    const addCommentElement = document.getElementById("add-comment");
 
     ///Функция GET-запроса (получение с сервера)
   function fetchAndCommentsRender() {
-    fetch("https://wedev-api.sky.pro/api/v1/aleksander-gavrikov/comments", {
+    addCommentElement.style.display = "none";
+    return fetch("https://wedev-api.sky.pro/api/v1/aleksander-gavrikov/comments", {
       method: "GET"
     })
       //исполнить ниже, когда придёт ответ от сервера (then)
       .then((response) => {
-        return response.json()
+        loadingElement.style.display = "none";
+        return response.json();
       })
       .then((responseData) => {
         const appComments = responseData.comments.map((comment) => {
@@ -48,6 +55,7 @@
         });
 
         commentsData = appComments;
+      addFormElement.style.display = "flex"; 
         renderComments();
       });
   };
@@ -76,16 +84,16 @@
         `;
     }).join('');
 
-  attachLikeButtonHandler();
-  initEditComments();
+    attachLikeButtonHandler();
+    initEditComments();
   }
   fetchAndCommentsRender();
   renderComments();
 
 buttonElement.addEventListener('click', () => {
     
-nameInputElement.classList.remove("error");
-textAreaElement.classList.remove("error");
+  nameInputElement.classList.remove("error");
+  textAreaElement.classList.remove("error");
  
 
 if (!nameInputElement.value || nameInputElement.value.trim().length === 0) {
@@ -96,9 +104,14 @@ else if (!textAreaElement.value || textAreaElement.value.trim().length === 0) {
       textAreaElement.classList.add("error");
     return;
   }
+
+    addFormElement.style.display = "none";
+    addCommentElement.textContent = "Комментарий добавляется...";
+    addCommentElement.style.display = "block";
+
       
  //POST-запрос
- fetch("https://wedev-api.sky.pro/api/v1/aleksander-gavrikov/comments", {
+  fetch("https://wedev-api.sky.pro/api/v1/aleksander-gavrikov/comments", {
       method: "POST",
       body: JSON.stringify({
         name: nameInputElement.value
@@ -119,29 +132,41 @@ else if (!textAreaElement.value || textAreaElement.value.trim().length === 0) {
       .then(() => {
         fetchAndCommentsRender();
       });
-    });
-    renderComments();
+  
+  renderComments();
     
     nameInputElement.value = "";
     textAreaElement.value = "";
-    
+
+  });
+
     function attachLikeButtonHandler() {
-    const likeButtons = document.querySelectorAll('.like-button');
-    for (const button of likeButtons) {
-      button.addEventListener('click', (event) => {
-        event.stopPropagation();
-        const index = parseInt(button.dataset.index);
-        const currentLikes = commentsData[index].likes;
-        const isActive = commentsData[index].isLiked;
-        if (isActive) {
-          commentsData[index].likes--;
-        } else {
-          commentsData[index].likes++;
-        }
-        commentsData[index].isLiked = !isActive;
-        renderComments();
+      const likeButtons = document.querySelectorAll('.like-button');
+      for (const button of likeButtons) {
+        button.addEventListener('click', (event) => {
+          event.stopPropagation();
+          button.classList.add('-loading-like');
+          delay(2000).then(() => {
+            const index = parseInt(button.dataset.index);
+            const isActive = commentsData[index].isLiked;
+              if (isActive) {
+                commentsData[index].likes--;
+              } else {
+                commentsData[index].likes++;
+              }
+              commentsData[index].isLiked = !isActive;
+              renderComments();
+        });
       });
     }
+  }
+
+  function delay(interval = 300) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve();
+      }, interval);
+    });
   }
 
   function initEditComments() {
