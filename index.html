@@ -22,6 +22,7 @@
   </body>
   <script>
     "use strict";
+    
     let commentsData = [];
 
     const listElement = document.getElementById("list");
@@ -38,7 +39,6 @@
     return fetch("https://wedev-api.sky.pro/api/v1/aleksander-gavrikov/comments", {
       method: "GET"
     })
-      //исполнить ниже, когда придёт ответ от сервера (then)
       .then((response) => {
         loadingElement.style.display = "none";
         return response.json();
