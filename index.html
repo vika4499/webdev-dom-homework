@@ -1,161 +1,240 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
   <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Проект "Комменты"</title>
-    <meta charset="utf-8" />
     <link rel="stylesheet" href="styles.css" />
   </head>
+
   <body>
+    <div id='preloader'>
+      <p class="preloader-text">Пожалуйста подождите, загружаю комментарии...</p>
+    </div>
     <div class="container">
-      <ul id="list" class="comments"></ul>
-      <div class="add-form">
-        <input id="name-input" type="text" class="add-form-name" placeholder="Введите ваше имя" />
-        <textarea id="text-input" type="textarea" class="add-form-text" placeholder="Введите ваш коментарий"
-          rows="4"></textarea>
+      <ul class="comments" id = 'list'>
+        <!-- Список комментариев пользователей -->
+      </ul>
+      <div class="add-form" id="addForm">
+        <input
+          type="text" 
+          class="add-form-name"
+          placeholder="Введите ваше имя"
+          id="name-input" 
+          required
+        />
+        <textarea
+          type="textarea"
+          class="add-form-text"
+          placeholder="Введите ваш коментарий"
+          rows="4"
+          id="text-input"
+        ></textarea>
         <div class="add-form-row">
-          <button id="write-button" class="add-form-button">Написать</button>
+          <button class="add-form-button" id="addCommentButton">Написать</button>
         </div>
       </div>
+      <div class="loader"></div> <!-- Лоадер -->
     </div>
   </body>
+  <style>
+    .error {
+      background-color: red;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
   <script>
-    "use strict";
-    let commentsData = [];
+    //Прелоудер
+    window.onload = function() {
+    let preloader = document.getElementById('preloader');
+}
 
+    //Обработчики событий
+    const buttonElement = document.getElementById("addCommentButton");
     const listElement = document.getElementById("list");
     const nameInputElement = document.getElementById("name-input");
-    const textAreaElement = document.getElementById("text-input");
-    const buttonElement = document.getElementById("write-button");
+    const textInputElement = document.getElementById("text-input");
+    const addForm = document.querySelector(".add-form");
+    const loader = document.querySelector(".loader");
 
-    ///Функция GET-запроса (получение с сервера)
-  function fetchAndCommentsRender() {
-    fetch("https://wedev-api.sky.pro/api/v1/aleksander-gavrikov/comments", {
-      method: "GET"
-    })
-      //исполнить ниже, когда придёт ответ от сервера (then)
-      .then((response) => {
-        return response.json()
-      })
-      .then((responseData) => {
-        const appComments = responseData.comments.map((comment) => {
-          return {
-            author: comment.author.name,
-            date: new Date(comment.date).toLocaleDateString('default', { day: '2-digit', month: '2-digit', year: '2-digit' }) + " " + new Date(comment.date).toLocaleTimeString().slice(0, -3),
-            text: comment.text,
-            likes: comment.likes,
-            isLiked: false,
-          };
-        });
+    //массив пользователей
+    let users = [];
 
-        commentsData = appComments;
-        renderComments();
-      });
-  };
-
-    // Рендеринг списка комментариев
-  function renderComments() {
-    listElement.innerHTML = commentsData.map((comment, index) => {
-      const textWithHTML = comment.text.replaceAll("QUOTE_BEGIN", "<div class='quote'>").replaceAll("QUOTE_END", "</div>");
-      return `
-              <li data-index="${index}" class="comment">
-                <div class="comment-header">
-                    <div>${comment.author}</div>
-                    <div>${comment.date}</div>
-                </div>
-                <div class="comment-body">
-                  <div class="comment-text">${textWithHTML}</div>
-                </div>
-                <div class="comment-footer">
-                    <div class="likes">
-                        <span class="likes-counter">${comment.likes}</span>
-                        <button class="like-button ${comment.isLiked ? '-active-like' : ''}" data-index="${index}">
-                        </button>
+    //HTML разметка комментария
+    const renderUsers = () => {
+      const usersHtml = users.map((item) => {
+        return `<li class="comment">
+                  <div class="comment-header">
+                    <div class="user-name">${item.name}</div>
+                    <div>${clock(item.date)}</div>
+                  </div>
+                  <div data-text="${item.comment}" class="comment-body">
+                    <div class="comment-text">
+                      ${item.comment}
                     </div>
-                </div>
-            </li>
-        `;
-    }).join('');
+                  </div>
+                  <div class="comment-footer">
+                    <div class="likes">
+                      <span class="likes-counter">${item.likes}</span>
+                      <button data-like="${item.likes}" data-id="${item.id}" class="like-button ${item.isLiked ? '-active-like' : 'like-button'}"></button>
+                    </div>
+                  </div>
+                </li>`;
+      }).join('');
 
-  attachLikeButtonHandler();
-  initEditComments();
-  }
-  fetchAndCommentsRender();
-  renderComments();
+      listElement.innerHTML = usersHtml;
 
-buttonElement.addEventListener('click', () => {
-    
-nameInputElement.classList.remove("error");
-textAreaElement.classList.remove("error");
- 
+      initLikeButtonListeners();
+      answerComment ();
+    };
 
-if (!nameInputElement.value || nameInputElement.value.trim().length === 0) {
-      nameInputElement.classList.add("error");
-    return;
-  }
-else if (!textAreaElement.value || textAreaElement.value.trim().length === 0) {
-      textAreaElement.classList.add("error");
-    return;
-  }
-      
- //POST-запрос
- fetch("https://wedev-api.sky.pro/api/v1/aleksander-gavrikov/comments", {
-      method: "POST",
-      body: JSON.stringify({
-        name: nameInputElement.value
-          .replaceAll("&", "&amp;")
-          .replaceAll("<", "&lt;")
-          .replaceAll(">", "&gt;")
-          .replaceAll('"', "&quot;"),
-        text: textAreaElement.value
-          .replaceAll("&", "&amp;")
-          .replaceAll("<", "&lt;")
-          .replaceAll(">", "&gt;")
-          .replaceAll('"', "&quot;")
-      })
-    })
-      .then((response) => {
-        return response.json()
-      })
-      .then(() => {
-        fetchAndCommentsRender();
+    renderUsers();
+
+    //Функция получения и преобразования данных с сервера
+    function getComments() {
+      return fetch(
+        'https://wedev-api.sky.pro/api/v1/artem-filumenov/comments',
+        {
+          method: "GET",
+          forceError: true,
+        }).then((response) => {
+          if (response.status === 500) {
+          throw new Error("Сервер упал");
+          };
+          return response.json();
+        }).then((responseData) => {
+            const appUsers = responseData.comments.map((comment) => {
+              return {
+                name: comment.author.name,
+                date: new Date(comment.date),
+                comment: comment.text,
+                likes: comment.likes,
+                isLiked: false,
+                id: comment.id,
+              }
+            });
+            users = appUsers;
+            renderUsers();
+            loader.textContent = '';
+            addForm.classList.remove("hidden");//отобразить форму ввода
+            preloader.classList.add('preloader-hidden');
+        }).catch((error) => {
+          if (error.message === 'Failed to fetch') {
+            alert("Кажется что-то пошло не так, попробуйте позже");
+          };
+          if (error.message === "Сервер упал") {
+            alert('Сервер сломался, попробуйте позже');
+          };
+
+        console.warn(error);
+      });
+    };
+
+    getComments();
+
+    //функция лайков
+    function initLikeButtonListeners () {
+      const buttonElements = document.querySelectorAll('.like-button');
+      for (const buttonElement of buttonElements) {
+
+        const id = buttonElement.dataset.id;
+        const counter = buttonElement.dataset.like;
+
+        buttonElement.addEventListener('click', (el) => {
+          el.stopPropagation();
+          const found = users.find(item => item.id === + id);
+          if (found.isLiked === false) {
+            const result = Number(counter) + 1;
+            found.likes = result;
+            found.isLiked = true;
+          } else if (found.isLiked === true) {
+            const result = Number(counter) - 1;
+            found.likes = result;
+            found.isLiked = false;
+          }
+          renderUsers();
+
+        });
+      }
+    };
+
+    //функция формата реального времени
+    function clock(time) {
+      let fullDate = time.toLocaleDateString([], { day: "2-digit", month: "2-digit", year: "2-digit",}) + " " + time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      return fullDate;
+    }
+
+    //Обработчик клика и проверка ввода
+    buttonElement.addEventListener('click', () => {
+      nameInputElement.classList.remove("error");
+      textInputElement.classList.remove("error");
+      if (!textInputElement.value.trim() || !nameInputElement.value.trim()) {
+        textInputElement.classList.add("error") || nameInputElement.classList.add("error");
+        return;        
+      }
+      //Скрыть форму ввода во время загрузки
+      addForm.classList.add("hidden");
+      loader.textContent = 'Комментарий добавляется...';
+
+      //Ввод нового комментария
+      const lastIndex = users.length - 1;
+      const lastUserId = users[lastIndex]['id']
+
+      const fetchPromise = fetch(
+      'https://wedev-api.sky.pro/api/v1/artem-filumenov/comments',
+
+      {
+        method: "POST",
+        body: JSON.stringify({
+          text: textInputElement.value.replaceAll('<', '&lt;').replaceAll('>', '&gt;'),
+          name: nameInputElement.value.replaceAll('<', '&lt;').replaceAll('>', '&gt;'),
+          forceError: falsue,
+        }),
+      }).then((response) => {
+        if (response.status === 500) {
+          throw new Error("Сервер упал");
+        };
+        if (response.status === 400) {
+          throw new Error("Короткие вводимые данные");
+        };
+        return response.json();
+      }).then((response) => {
+          getComments();
+          //Очистка форм input
+          nameInputElement.value = "";
+          textInputElement.value = "";
+
+          renderUsers();
+      }).catch((error) => {
+        if (error.message === 'Failed to fetch') {
+          alert("Кажется что-то пошло не так, попробуйте позже");
+        };
+        if (error.message === "Сервер упал") {
+          alert('Сервер сломался, попробуйте позже');
+        };
+        if (error.message === "Короткие вводимые данные") {
+          alert('Имя и комментарий должны быть не короче 3х символов');
+        };
+
+        console.warn(error);
+        loader.textContent = '';
+        addForm.classList.remove("hidden");
       });
     });
-    renderComments();
-    
-    nameInputElement.value = "";
-    textAreaElement.value = "";
-    
-    function attachLikeButtonHandler() {
-    const likeButtons = document.querySelectorAll('.like-button');
-    for (const button of likeButtons) {
-      button.addEventListener('click', (event) => {
-        event.stopPropagation();
-        const index = parseInt(button.dataset.index);
-        const currentLikes = commentsData[index].likes;
-        const isActive = commentsData[index].isLiked;
-        if (isActive) {
-          commentsData[index].likes--;
-        } else {
-          commentsData[index].likes++;
-        }
-        commentsData[index].isLiked = !isActive;
-        renderComments();
-      });
-    }
-  }
 
-  function initEditComments() {
-    const editComments = document.querySelectorAll('.comment');
-    for (const editComment of editComments) {
-      editComment.addEventListener('click', () => {
-        const index = editComment.dataset.index;
-        const commentAuthor = `${commentsData[index].author}:`;
-        const commentText = `${commentsData[index].text}`;
-        textAreaElement.value = `${commentAuthor}\n${commentText}\n\n`.replaceAll("QUOTE_BEGIN", "").replaceAll("QUOTE_END", "");;
-        renderComments();
-      })
+    //Функция ответа на комментарий
+    function answerComment () {
+      const commentBlocks = document.querySelectorAll('.comment-body');
+      for (const commentBlock of commentBlocks) {
+        commentBlock.addEventListener('click', (event) => {
+          const userNames = document.querySelectorAll('.user-name');
+          console.log(event);
+          textInputElement.value = `< ${event.target.outerText} \n ${event.target.parentElement.parentElement.firstElementChild.firstElementChild.innerText},`;
+        });
+      }
     }
-  }
-    </script>
-  </body>
+    answerComment();
+  </script>
 </html>
