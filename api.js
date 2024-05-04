@@ -12,7 +12,6 @@ export const setToken = (newToken) => {
 }
 
 export function getListElements() {
-    // const loadingElement = document.querySelector(".loading");
     return fetch(commentsURL, {
         method: "GET",
         headers: {
@@ -20,7 +19,6 @@ export function getListElements() {
         },
     })
         .then((response) => {
-            // loadingElement.style.display = "none";
             return response.json();
         });
 }
@@ -39,7 +37,6 @@ export function postListElement({ name, text }) {
         })
     })
         .then((response) => {
-
             if (response.status === 500) {
                 throw new Error("Сервер упал");
             }

@@ -13,12 +13,14 @@ export const handlePostClick = () => {
     nameInputElement.classList.remove("error");
     textAreaElement.classList.remove("error");
 
-    if (!nameInputElement.value || nameInputElement.value.trim().length === 0) {
+    if (!nameInputElement.value || 
+        nameInputElement.value.trim().length === 0) {
         nameInputElement.classList.add("error");
         return;
     }
 
-    else if (!textAreaElement.value || textAreaElement.value.trim().length === 0) {
+    else if (!textAreaElement.value || 
+        textAreaElement.value.trim().length === 0) {
         textAreaElement.classList.add("error");
         return;
     }

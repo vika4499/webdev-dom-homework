@@ -56,6 +56,6 @@ export function renderComments(commentsData, isAuthenticated, isAuthorized, user
         buttonElement.addEventListener('click', handlePostClick);
     }
 
-    attachLikeButtonHandler(commentsData);
-    initEditComments(commentsData);
+    attachLikeButtonHandler(commentsData, isAuthenticated, isAuthorized, userName)
+  initEditComments(commentsData, isAuthenticated, isAuthorized, userName)
 }
