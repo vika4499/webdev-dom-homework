@@ -39,7 +39,6 @@ export const renderLoginForm = () => {
             setToken(responseData.user.token);
             setUser(responseData.user);
             renderApp();
-            console.log(token);
         }).catch((error) => {
             if (error.message === 'Failed to fetch') {
               alert("Кажется что-то пошло не так, попробуйте позже");

@@ -1,10 +1,11 @@
-import { initAddCommentsListeners } from "./initAddCommentsListeners.js";
-import { renderLoginForm } from "./login.js";
-import { user } from "./main.js";
+import { initAddCommentsListeners } from './initAddCommentsListeners.js'
+import { renderLoginForm } from './login.js'
+import { user } from './main.js'
 
 export const renderCommentForm = () => {
-    const addCommentForm = document.querySelector(".form");
-    const commentFormHtml = user ?`
+    const addCommentForm = document.querySelector('.form')
+    const commentFormHtml = user
+        ? `
     <div class="add-form" id="addForm">
         <input
             type="text" 
@@ -25,16 +26,17 @@ export const renderCommentForm = () => {
         <div class="add-form-row">
             <button class="add-form-button" id="addCommentButton">Написать</button>
         </div>
-    </div>`: `<div class="auth-war">Чтобы оставить комментарий пожалуйста, <button class="auth-link">авторизуйтесь</button></div>`;
+    </div>`
+        : `<div class="auth-war">Чтобы оставить комментарий пожалуйста, <button class="auth-link">авторизуйтесь</button></div>`
 
-    addCommentForm.innerHTML = commentFormHtml;
-    const authButton = document.querySelector('.auth-link');
+    addCommentForm.innerHTML = commentFormHtml
+    const authButton = document.querySelector('.auth-link')
     if (authButton) {
         authButton.addEventListener('click', () => {
-            renderLoginForm();
-        });
+            renderLoginForm()
+        })
     }
     if (user) {
-        initAddCommentsListeners();
-    };
-};
+        initAddCommentsListeners()
+    }
+}
