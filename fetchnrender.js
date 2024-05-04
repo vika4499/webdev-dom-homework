@@ -1,11 +1,10 @@
 import { getListElements } from "./api.js";
-import { addCommentElement, addFormElement,  } from "./main.js";
-import { renderComments } from "./render.js";
+import { renderComments } from "./renderComments.js";
 
 
-export function fetchAndCommentsRender(commentsData) {
-    addCommentElement.style.display = "none";
+export function fetchAndCommentsRender(commentsData, isAuthenticated, isAuthorized, userName) {
     getListElements().then((responseData) => {
+
         const appComments = responseData.comments.map((comment) => {
             return {
                 author: comment.author.name,
@@ -17,7 +16,7 @@ export function fetchAndCommentsRender(commentsData) {
         });
 
         commentsData = appComments;
-        addFormElement.style.display = "flex"; // Показать форму после
-        renderComments(commentsData);
+
+        renderComments(commentsData, isAuthenticated, isAuthorized, userName);
     });
 };

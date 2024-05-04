@@ -1,21 +1,37 @@
 import { sanitizeHtml } from "./sanitizeHtml.js";
+import { loadingElement } from "./varexp.js";
+
+
+const commentsURL = "https://wedev-api.sky.pro/api/v2/aleksander-gavrikov/comments";
+const userURL = "https://wedev-api.sky.pro/api/user/login";
+
+export let token;
+
+export const setToken = (newToken) => {
+    token = newToken;
+}
 
 export function getListElements() {
-    const loadingElement = document.querySelector(".loading");
-    return fetch("https://wedev-api.sky.pro/api/v1/aleksander-gavrikov/comments", {
-        method: "GET"
+    // const loadingElement = document.querySelector(".loading");
+    return fetch(commentsURL, {
+        method: "GET",
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
     })
-        //исполнить ниже, когда придёт ответ от сервера (then)
         .then((response) => {
-            loadingElement.style.display = "none";
+            // loadingElement.style.display = "none";
             return response.json();
         });
 }
 
 export function postListElement({ name, text }) {
     //POST-запрос с цепочкой промисов (отправка на сервер)
-    return fetch("https://wedev-api.sky.pro/api/v1/aleksander-gavrikov/comments", {
+    return fetch(commentsURL, {
         method: "POST",
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({
             name: sanitizeHtml(name),
             text: sanitizeHtml(text),
@@ -36,3 +52,15 @@ export function postListElement({ name, text }) {
             }
         })
 }
+
+export function login({ login, password }) {
+    return fetch(userURL, {
+      method: "POST",
+      body: JSON.stringify({
+        login,
+        password,
+      }),
+    }).then((response) => {
+      return response.json();
+    });
+  }

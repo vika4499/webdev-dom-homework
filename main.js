@@ -1,15 +1,11 @@
 import { fetchAndCommentsRender } from "./fetchnrender.js";
-import { handlePostClick } from "./handlepostclick.js";
+import { userName } from "./renderLogin.js";
 
+// Объявление переменных
 let commentsData = [];
-export {commentsData};
-export const nameInputElement = document.getElementById("name-input");
-export const textAreaElement = document.getElementById("text-input");
-export const addFormElement = document.querySelector(".add-form");
-export const addCommentElement = document.getElementById("add-comment");
-const buttonElement = document.getElementById("write-button");
+export let isAuthenticated = false;
+let isAuthorized = false;
+export { commentsData };
 
 
-fetchAndCommentsRender();
-
-buttonElement.addEventListener('click', handlePostClick);
+fetchAndCommentsRender(commentsData, isAuthenticated, isAuthorized, userName);

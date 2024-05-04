@@ -1,9 +1,15 @@
 import { postComment } from "./postcomment.js";
-import { addCommentElement, addFormElement, nameInputElement, textAreaElement} from "./main.js";
-
+import { isAuthenticated } from "./main.js";
 
 // функция проверки полей и обработка кодов API
 export const handlePostClick = () => {
+
+    const nameInputElement = document.getElementById("name-input");
+    const textAreaElement = document.getElementById("text-input");
+    const addFormElement = document.querySelector(".add-form");
+    const addCommentElement = document.getElementById("add-comment");
+
+
     nameInputElement.classList.remove("error");
     textAreaElement.classList.remove("error");
 
@@ -22,7 +28,7 @@ export const handlePostClick = () => {
     addCommentElement.textContent = "Комментарий добавляется...";
     addCommentElement.style.display = "block";
 
-    postComment(textAreaElement.value, nameInputElement.value)
+    postComment(textAreaElement.value, nameInputElement.value, isAuthenticated)
 
         .catch((error) => {
 
@@ -47,7 +53,10 @@ export const handlePostClick = () => {
 };
 
 // Показ заполненной формы
-function showAddForm() {
+const showAddForm = () => {
+
+    const addFormElement = document.querySelector(".add-form");
+    const addCommentElement = document.getElementById("add-comment");
     addFormElement.style.display = "flex";
     addCommentElement.style.display = "none";
 }

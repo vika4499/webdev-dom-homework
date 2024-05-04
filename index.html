@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-
 <head>
   <title>Проект "Комменты"</title>
   <meta charset="utf-8" />
@@ -8,21 +7,8 @@
 </head>
 
 <body>
-  <div class="container">
-    <div class="loading">Пожалуйста подождите, загружаю комментарии...</div>
-    <ul id="list" class="comments"></ul>
-    <div id="add-comment" class="add-comment-text">Комментарий добавляется...</div>
-    <div class="add-form">
-      <input id="name-input" type="text" class="add-form-name" placeholder="Введите ваше имя" />
-      <textarea id="text-input" type="textarea" class="add-form-text" placeholder="Введите ваш коментарий"
-        rows="4"></textarea>
-      <div class="add-form-row">
-        <button id="write-button" class="add-form-button">Написать</button>
-      </div>
-    </div>
-  </div>
+  <div id="app"></div>
 </body>
 
-<script type = "module" src="./main.js"></script>
-
+<script type="module" src="./main.js"></script>
 </html>
