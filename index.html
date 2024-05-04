@@ -1,16 +1,26 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Проект "Комменты"</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
 
-<head>
-  <title>Проект "Комменты"</title>
-  <meta charset="utf-8" />
-  <link rel="stylesheet" href="styles.css" />
-</head>
-
-<body>
-  <div id="app" class = "container">Пожалуйста подождите, загружаю комментарии...></div>
-</body>
-
-<script type="module" src="./main.js"></script>
-
+  <body>
+    <div id='preloader'>
+      <p class="preloader-text">Пожалуйста подождите, загружаю комментарии...</p>
+    </div>
+    <div class="container">
+    </div>
+  </body>
+  <style>
+    .error {
+      background-color: red;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+  <script type="module" src="main.js"></script>
 </html>

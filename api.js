@@ -1,63 +1,98 @@
-import { sanitizeHtml } from "./sanitizeHtml.js";
-import { loadingElement } from "./varexp.js";
-
-
-const commentsURL = "https://wedev-api.sky.pro/api/v2/aleksander-gavrikov/comments";
-const userURL = "https://wedev-api.sky.pro/api/user/login";
-
+const host = 'https://wedev-api.sky.pro/api/v2/artem-filumenov/comments';
+const userHost = 'https://wedev-api.sky.pro/api/user/login';
+const authHost = 'https://wedev-api.sky.pro/api/user';
 export let token;
-
 export const setToken = (newToken) => {
-    token = newToken;
-}
+  token = newToken;
+};
 
-export function getListElements() {
-    return fetch(commentsURL, {
-        method: "GET",
-        headers: {
+export function getTodos() {
+    return fetch(host,
+        {
+          method: "GET",
+          forceError: true,
+        }).then((response) => {
+          if (response.status === 500) {
+          throw new Error("Сервер упал");
+          };
+          if (response.status === 401) {
+            throw new Error("Нет авторизации");
+            };
+          return response.json();
+        }).catch((error) => {
+          if (error.message === 'Failed to fetch') {
+            alert("Кажется что-то пошло не так, попробуйте позже");
+          };
+          if (error.message === "Сервер упал") {
+            alert('Сервер сломался, попробуйте позже');
+          };
+          if (error.message === "Нет авторизации") {
+            alert("Авторизируйся");
+            };
+        console.warn(error);
+      });
+};
+
+export function postTodo({text, name}) {
+    return fetch(host,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            text: text.replaceAll('<', '&lt;').replaceAll('>', '&gt;'),
+            name: name.replaceAll('<', '&lt;').replaceAll('>', '&gt;'),
+          }),
+          headers: {
             Authorization: `Bearer ${token}`,
-        },
-    })
-        .then((response) => {
-            return response.json();
+          },
+          forceError: true,
+        }).then((response) => {
+          if (response.status === 500) {
+            throw new Error("Сервер упал");
+          };
+          if (response.status === 400) {
+            throw new Error("Короткие вводимые данные");
+          };
+          return response.json();
         });
-}
+};
 
-export function postListElement({ name, text }) {
-    //POST-запрос с цепочкой промисов (отправка на сервер)
-    return fetch(commentsURL, {
+export function authUser({login, password}) {
+  return fetch(userHost,
+      {
         method: "POST",
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
         body: JSON.stringify({
-            name: sanitizeHtml(name),
-            text: sanitizeHtml(text),
-            forceError: true,
-        })
-    })
-        .then((response) => {
-            if (response.status === 500) {
-                throw new Error("Сервер упал");
-            }
+          login: login.replaceAll('<', '&lt;').replaceAll('>', '&gt;'),
+          password: password.replaceAll('<', '&lt;').replaceAll('>', '&gt;'),
+        }),
+        forceError: true,
+      }).then((response) => {
+        if (response.status === 500) {
+          throw new Error("Сервер упал");
+        };
+        if (response.status === 400) {
+          throw new Error("Короткие вводимые данные");
+        };
+        return response.json();
+      });
+};
 
-            if (response.status === 400) {
-                throw new Error("Ошибочный запрос");
-            }
-            else {
-                return response.json()
-            }
-        })
-}
-
-export function login({ login, password }) {
-    return fetch(userURL, {
-      method: "POST",
-      body: JSON.stringify({
-        login,
-        password,
-      }),
-    }).then((response) => {
-      return response.json();
-    });
-  }
+export function regUser({name, login, password}) {
+  return fetch(authHost,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          name: name.replaceAll('<', '&lt;').replaceAll('>', '&gt;'),
+          login: login.replaceAll('<', '&lt;').replaceAll('>', '&gt;'),
+          password: password.replaceAll('<', '&lt;').replaceAll('>', '&gt;'),
+        }),
+        forceError: true,
+      }).then((response) => {
+        if (response.status === 500) {
+          throw new Error("Сервер упал");
+        };
+        if (response.status === 400) {
+          throw new Error("Короткие вводимые данные");
+        };
+        return response.json();
+      });
+};

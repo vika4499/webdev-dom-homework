@@ -1,61 +1,69 @@
-import { attachLikeButtonHandler } from "./likebuttons.js";
-import { initEditComments } from "./editcomment.js";
-import { handlePostClick } from "./handlepostclick.js";
-import { renderLogin } from "./renderLogin.js";
-export function renderComments(commentsData, isAuthenticated, isAuthorized, userName) {
+import { comments, user } from "./main.js";
+import { clock } from "./helpers.js";
 
-    const appElement = document.getElementById("app");
-    const commentsHtml = commentsData
-        .map((comment, index) => {
-            const textWithHTML = comment.text.replaceAll("QUOTE_BEGIN", "<div class='quote'>").replaceAll("QUOTE_END", "</div>");
-            return `
-            <li data-index="${index}" class="comment">
+export const renderComments = () => {
+    const listElement = document.getElementById("list");
+    const commentsHtml = comments.map((item) => {
+      return `<li class="comment">
                 <div class="comment-header">
-                    <div>${comment.author}</div>
-                    <div>${comment.date}</div>
+                  <div class="user-name">${item.name}</div>
+                  <div>${clock(item.date)}</div>
                 </div>
-                <div class="comment-body">
-                    <div class="comment-text">${textWithHTML}</div>
+                <div data-text="${item.comment}" class="comment-body">
+                  <div class="comment-text">
+                    ${item.comment}
+                  </div>
                 </div>
                 <div class="comment-footer">
-                    <div class="likes">
-                        <span class="likes-counter">${comment.likes}</span>
-                        <button class="like-button ${comment.isLiked ? '-active-like' : ''}" data-index="${index}"></button>
-                    </div>
+                  <div class="likes">
+                    <span class="likes-counter">${item.likes}</span>
+                    <button data-like="${item.likes}" data-id="${item.id}" class="like-button ${item.isLiked ? '-active-like' : 'like-button'}"></button>
+                  </div>
                 </div>
-            </li>
-        `;
-        }).join('');
+              </li>`;
+    }).join('');
+  
+    listElement.innerHTML = commentsHtml;
+    
+    if (user) {
+      initLikeButtonListeners();
+      answerComment ();
+    };
+  };
 
+  function initLikeButtonListeners () {
+    const buttonElements = document.querySelectorAll('.like-button');
+    for (const buttonElement of buttonElements) {
+  
+      const id = buttonElement.dataset.id;
+      const counter = buttonElement.dataset.like;
+  
+      buttonElement.addEventListener('click', (el) => {
+        el.stopPropagation();
+        const found = comments.find(item => item.id === id);
+        if (found.isLiked === false) {
+          const result = Number(counter) + 1;
+          found.likes = result;
+          found.isLiked = true;
+        } else if (found.isLiked === true) {
+          const result = Number(counter) - 1;
+          found.likes = result;
+          found.isLiked = false;
+        }
+        renderComments();
+  
+      });
+    };
+  };
 
-    const addFormHtml = isAuthenticated ? `
-        <div class="add-form">
-            <input id="name-input" type="text" class="add-form-name" value = "${userName}" readonly />
-            <textarea id="text-input" type="textarea" class="add-form-text" placeholder="Введите Ваш коментарий" rows="4"></textarea>
-            <div class="add-form-row">
-                <button id="write-button" class="add-form-button">Написать</button>
-            </div>
-        </div>` : '';
-
-    const appHtml = `
-<div class="container">
-    <ul id="list" class="comments">${commentsHtml}</ul>
-    <div id="add-comment" class="add-comment-text ${isAuthorized ? 'hidden' : ''}">Чтобы добавить комментарий, <span class = "authorize-word">авторизуйтесь</span></div>
-    ${addFormHtml}
-  </div>
-`;
-    appElement.innerHTML = appHtml;
-
-
-    const authorizeWordElement = document.querySelector(".authorize-word");
-    authorizeWordElement.addEventListener('click', renderLogin);
-
-
-    const buttonElement = document.getElementById("write-button");
-    if (buttonElement) {
-        buttonElement.addEventListener('click', handlePostClick);
-    }
-
-    attachLikeButtonHandler(commentsData, isAuthenticated, isAuthorized, userName)
-  initEditComments(commentsData, isAuthenticated, isAuthorized, userName)
-}
+  function answerComment () {
+    const commentBlocks = document.querySelectorAll('.comment-body');
+    for (const commentBlock of commentBlocks) {
+      commentBlock.addEventListener('click', (event) => {
+        const userNames = document.querySelectorAll('.user-name');
+        const textInputElement = document.getElementById("text-input");
+        textInputElement.value = `< ${event.target.outerText} \n ${event.target.parentElement.parentElement.firstElementChild.firstElementChild.innerText},`;
+      });
+    };
+  };
+  
