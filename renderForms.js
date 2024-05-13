@@ -11,7 +11,7 @@ export const renderCommentForm = () => {
             class="input-form"
             id="name-input" 
             required
-            value=${user.name}
+            value="${user.name}"
             disabled
             readonly
         />

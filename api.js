@@ -1,4 +1,4 @@
-const host = 'https://wedev-api.sky.pro/api/v2/artem-filumenov/comments';
+const host = 'https://wedev-api.sky.pro/api/v2/vika4499/comments';
 const userHost = 'https://wedev-api.sky.pro/api/user/login';
 const authHost = 'https://wedev-api.sky.pro/api/user';
 export let token;

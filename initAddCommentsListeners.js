@@ -1,5 +1,5 @@
 import { postTodo } from "./api.js";
-import { getComments, comments } from "./main.js";
+import { getComments } from "./main.js";
 import { renderComments, } from "./renderComments.js";
 
 export function initAddCommentsListeners() {
@@ -17,9 +17,6 @@ export function initAddCommentsListeners() {
 
         addForm.classList.add("hidden");
         loader.textContent = 'Комментарий добавляется...';
-      
-        const lastIndex = comments.length - 1;
-        const lastCommentId = comments[lastIndex]['id']
       
         postTodo({ 
           text: textInputElement.value,

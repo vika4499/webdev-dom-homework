@@ -1,6 +1,8 @@
 import { authUser, regUser, setToken, token } from "./api.js";
 import { renderApp, setUser } from "./main.js";
 
+export let userName;
+
 export const renderLoginForm = () => {
     const addLoginForm = document.querySelector(".container");
     const loginFormHtml = `
@@ -31,6 +33,7 @@ export const renderLoginForm = () => {
     const authButtonElement = document.getElementById("authButton");
     const loginInputElement = document.getElementById("authInputName");
     const passwordInputElement = document.getElementById("authInputPassword");
+    
     authButtonElement.addEventListener('click', () => {
         authUser({
             login: loginInputElement.value,
@@ -39,7 +42,6 @@ export const renderLoginForm = () => {
             setToken(responseData.user.token);
             setUser(responseData.user);
             renderApp();
-            console.log(token);
         }).catch((error) => {
             if (error.message === 'Failed to fetch') {
               alert("Кажется что-то пошло не так, попробуйте позже");
@@ -90,11 +92,13 @@ export const renderRegForm = () => {
         </div>
         <button class="auth-button">Войти</button>
     </div>`;
+
     addRegForm.innerHTML = regFormHtml;
     const regButtonElement = document.getElementById("regButton");
     const nameInputElement = document.getElementById("regInputName");
     const loginInputElement = document.getElementById("regInputLogin");
     const passwordInputElement = document.getElementById("regInputPassword");
+    
     regButtonElement.addEventListener('click', () => {
         regUser({
             name: nameInputElement.value,
@@ -114,7 +118,7 @@ export const renderRegForm = () => {
               alert('Сервер сломался, попробуйте позже');
             };
             if (error.message === "Короткие вводимые данные") {
-              alert('Неверный логин или пароль.');
+              alert('Данные не корректны!');
             };
           console.warn(error);
         });
