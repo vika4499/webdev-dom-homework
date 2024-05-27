@@ -4,8 +4,8 @@ import { renderApp, setUser } from "./main.js";
 export let userName;
 
 export const renderLoginForm = () => {
-    const addLoginForm = document.querySelector(".container");
-    const loginFormHtml = `
+  const addLoginForm = document.querySelector(".container");
+  const loginFormHtml = `
     <div class="add-form" id="authForm">
         <h2>Форма входа</h2>
         <input
@@ -28,42 +28,51 @@ export const renderLoginForm = () => {
         <button class="reg-button">Зарегестрироваться</button>
     </div>`;
 
-    addLoginForm.innerHTML = loginFormHtml;
+  addLoginForm.innerHTML = loginFormHtml;
 
-    const authButtonElement = document.getElementById("authButton");
-    const loginInputElement = document.getElementById("authInputName");
-    const passwordInputElement = document.getElementById("authInputPassword");
-    
-    authButtonElement.addEventListener('click', () => {
-        authUser({
-            login: loginInputElement.value,
-            password: passwordInputElement.value,
-        }).then((responseData) => {
-            setToken(responseData.user.token);
-            setUser(responseData.user);
-            renderApp();
-        }).catch((error) => {
-            if (error.message === 'Failed to fetch') {
-              alert("Кажется что-то пошло не так, попробуйте позже");
-            };
-            if (error.message === "Сервер упал") {
-              alert('Сервер сломался, попробуйте позже');
-            };
-            if (error.message === "Короткие вводимые данные") {
-              alert('Неверный логин или пароль.');
-            };
-          console.warn(error);
-        });
-    });
-    const regButton = document.querySelector(".reg-button");
-    regButton.addEventListener('click', () => {
-        renderRegForm();
-    });
+  const authButtonElement = document.getElementById("authButton");
+  const loginInputElement = document.getElementById("authInputName");
+  const passwordInputElement = document.getElementById("authInputPassword");
+
+  authButtonElement.addEventListener("click", () => {
+    if (
+      loginInputElement.value.trim() === "" ||
+      passwordInputElement.value.trim() === ""
+    ) {
+      alert("Логин и пароль не могут быть пустыми!");
+      return;
+    }
+    authUser({
+      login: loginInputElement.value,
+      password: passwordInputElement.value,
+    })
+      .then((responseData) => {
+        setToken(responseData.user.token);
+        setUser(responseData.user);
+        renderApp();
+      })
+      .catch((error) => {
+        if (error.message === "Failed to fetch") {
+          alert("Кажется что-то пошло не так, попробуйте позже");
+        }
+        if (error.message === "Сервер упал") {
+          alert("Сервер сломался, попробуйте позже");
+        }
+        if (error.message === "Короткие вводимые данные") {
+          alert("Неверный логин или пароль.");
+        }
+        console.warn(error);
+      });
+  });
+  const regButton = document.querySelector(".reg-button");
+  regButton.addEventListener("click", () => {
+    renderRegForm();
+  });
 };
 
 export const renderRegForm = () => {
-    const addRegForm = document.querySelector(".container");
-    const regFormHtml = `
+  const addRegForm = document.querySelector(".container");
+  const regFormHtml = `
     <div class="add-form" id="regForm">
         <h2>Форма регистрации</h2>
         <input
@@ -93,38 +102,47 @@ export const renderRegForm = () => {
         <button class="auth-button">Войти</button>
     </div>`;
 
-    addRegForm.innerHTML = regFormHtml;
-    const regButtonElement = document.getElementById("regButton");
-    const nameInputElement = document.getElementById("regInputName");
-    const loginInputElement = document.getElementById("regInputLogin");
-    const passwordInputElement = document.getElementById("regInputPassword");
-    
-    regButtonElement.addEventListener('click', () => {
-        regUser({
-            name: nameInputElement.value,
-            login: loginInputElement.value,
-            password: passwordInputElement.value,
-        }).then((responseData) => {
-            console.log(token);
-            setToken(responseData.user.token);
-            setUser(responseData.user);
-            renderApp();
-            console.log(token);
-        }).catch((error) => {
-            if (error.message === 'Failed to fetch') {
-              alert("Кажется что-то пошло не так, попробуйте позже");
-            };
-            if (error.message === "Сервер упал") {
-              alert('Сервер сломался, попробуйте позже');
-            };
-            if (error.message === "Короткие вводимые данные") {
-              alert('Данные не корректны!');
-            };
-          console.warn(error);
-        });
-    });
-    const authButton = document.querySelector(".auth-button");
-    authButton.addEventListener('click', () => {
-        renderLoginForm();
-    });
+  addRegForm.innerHTML = regFormHtml;
+  const regButtonElement = document.getElementById("regButton");
+  const nameInputElement = document.getElementById("regInputName");
+  const loginInputElement = document.getElementById("regInputLogin");
+  const passwordInputElement = document.getElementById("regInputPassword");
+
+  regButtonElement.addEventListener("click", () => {
+    if (
+      loginInputElement.value.trim() === "" ||
+      passwordInputElement.value.trim() === ""
+    ) {
+      alert("Поля регистрации не могут быть пустыми!");
+      return;
+    }
+    regUser({
+      name: nameInputElement.value,
+      login: loginInputElement.value,
+      password: passwordInputElement.value,
+    })
+      .then((responseData) => {
+        console.log(token);
+        setToken(responseData.user.token);
+        setUser(responseData.user);
+        renderApp();
+        console.log(token);
+      })
+      .catch((error) => {
+        if (error.message === "Failed to fetch") {
+          alert("Кажется что-то пошло не так, попробуйте позже");
+        }
+        if (error.message === "Сервер упал") {
+          alert("Сервер сломался, попробуйте позже");
+        }
+        if (error.message === "Короткие вводимые данные") {
+          alert("Данные не корректны!");
+        }
+        console.warn(error);
+      });
+  });
+  const authButton = document.querySelector(".auth-button");
+  authButton.addEventListener("click", () => {
+    renderLoginForm();
+  });
 };
